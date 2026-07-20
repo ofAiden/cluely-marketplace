@@ -26,9 +26,14 @@ export default async function Dashboard() {
         <h1 className="text-2xl font-bold">
           {user.team_name} · Team {user.team_number}
         </h1>
-        <Link href="/messages" className="link text-sm ml-auto">
-          Messages{convCount && convCount.n > 0 ? ` (${convCount.n})` : ""} →
-        </Link>
+        <div className="ml-auto flex gap-4 text-sm">
+          <Link href="/messages" className="link">
+            Messages{convCount && convCount.n > 0 ? ` (${convCount.n})` : ""}
+          </Link>
+          <Link href="/account/password" className="link">
+            Change password
+          </Link>
+        </div>
       </div>
 
       <section>

@@ -52,6 +52,29 @@ export const completeProfileSchema = z.object({
   city: z.string().trim().min(2).max(60).default("San Diego"),
 });
 
+// Password rules reused for signup, change, and reset.
+const passwordField = z
+  .string()
+  .min(10, "Password must be at least 10 characters")
+  .max(128)
+  .refine((p) => /[a-zA-Z]/.test(p) && /[0-9]/.test(p), {
+    message: "Password must contain at least one letter and one number",
+  });
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1).max(128),
+  newPassword: passwordField,
+});
+
+export const forgotSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(254),
+});
+
+export const resetSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{64}$/),
+  newPassword: passwordField,
+});
+
 // Admin: ban/unban a user.
 export const banSchema = z.object({
   userId: z.string().regex(/^[a-f0-9]{32}$/),

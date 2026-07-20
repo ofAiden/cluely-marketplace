@@ -52,7 +52,12 @@ export default function LoginPage() {
           {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <p className="text-sm text-stone-500 mt-4">
+      <p className="text-sm text-stone-500 mt-3">
+        <Link href="/forgot" className="link">
+          Forgot password?
+        </Link>
+      </p>
+      <p className="text-sm text-stone-500 mt-1">
         New here?{" "}
         <Link href="/register" className="link">
           Register your team
