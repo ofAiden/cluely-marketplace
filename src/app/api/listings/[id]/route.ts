@@ -30,8 +30,8 @@ export async function PATCH(
   const listing = await qOne<Listing>("SELECT * FROM listings WHERE id = ?", [id]);
   if (!listing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // AUTHORIZATION: only the seller may change their listing.
-  if (listing.seller_id !== user.id) {
+  // AUTHORIZATION: the seller may change their own listing; an admin may change any.
+  if (listing.seller_id !== user.id && !user.is_admin) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

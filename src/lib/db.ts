@@ -54,7 +54,8 @@ export function ensureSchema(): Promise<void> {
           city TEXT NOT NULL DEFAULT 'San Diego',
           created_at INTEGER NOT NULL,
           failed_logins INTEGER NOT NULL DEFAULT 0,
-          locked_until INTEGER
+          locked_until INTEGER,
+          banned INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS sessions (
@@ -110,6 +111,14 @@ export function ensureSchema(): Promise<void> {
         );
         CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id, created_at);
       `);
+
+      // Idempotent migration for databases created before `banned` existed.
+      try {
+        await db.execute("ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0");
+      } catch {
+        // Column already exists — ignore.
+      }
+
       globalForDb.__dbInit = true;
     })();
   }
@@ -149,6 +158,7 @@ export interface User {
   created_at: number;
   failed_logins: number;
   locked_until: number | null;
+  banned: number;
 }
 
 export interface Listing {

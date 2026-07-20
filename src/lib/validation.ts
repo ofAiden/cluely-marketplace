@@ -52,6 +52,12 @@ export const completeProfileSchema = z.object({
   city: z.string().trim().min(2).max(60).default("San Diego"),
 });
 
+// Admin: ban/unban a user.
+export const banSchema = z.object({
+  userId: z.string().regex(/^[a-f0-9]{32}$/),
+  banned: z.boolean(),
+});
+
 export const idSchema = z.string().regex(/^[a-f0-9]{32}$/);
 
 export function firstError(err: z.ZodError): string {

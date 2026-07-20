@@ -66,14 +66,34 @@ export async function destroyAllSessions(userId: string): Promise<void> {
   await run("DELETE FROM sessions WHERE user_id = ?", [userId]);
 }
 
-export type SafeUser = Omit<User, "password_hash" | "failed_logins" | "locked_until">;
+export type SafeUser = Omit<User, "password_hash" | "failed_logins" | "locked_until" | "banned"> & {
+  is_admin: boolean;
+};
+
+/**
+ * Admins are designated by email (comma-separated ADMIN_EMAILS, defaulting to
+ * The Clueless team email). Whoever controls that email account holds admin
+ * powers, so no password is ever handled here.
+ */
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "ftc11212@gmail.com")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+export function isAdminEmail(email: string): boolean {
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
 
 export async function getCurrentUser(): Promise<SafeUser | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const row = await qOne<User & { expires_at: number }>(
-    `SELECT u.id, u.email, u.team_number, u.team_name, u.city, u.created_at, s.expires_at
+  const row = await qOne<
+    Pick<User, "id" | "email" | "team_number" | "team_name" | "city" | "created_at" | "banned"> & {
+      expires_at: number;
+    }
+  >(
+    `SELECT u.id, u.email, u.team_number, u.team_name, u.city, u.created_at, u.banned, s.expires_at
        FROM sessions s JOIN users u ON u.id = s.user_id
       WHERE s.token_hash = ?`,
     [hashToken(token)]
@@ -83,10 +103,12 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
     await destroySession(token);
     return null;
   }
-  const { expires_at: _discard, password_hash: _d2, failed_logins: _d3, locked_until: _d4, ...safe } =
-    row as User & { expires_at: number };
-  void _discard; void _d2; void _d3; void _d4;
-  return safe;
+  // Banned users are treated as signed out everywhere.
+  if (row.banned) return null;
+  const { expires_at: _discard, banned: _b, ...rest } = row;
+  void _discard;
+  void _b;
+  return { ...rest, is_admin: isAdminEmail(rest.email) };
 }
 
 /** Account lockout: 8 failed attempts locks the account for 15 minutes. */

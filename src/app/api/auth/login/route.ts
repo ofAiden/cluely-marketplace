@@ -54,6 +54,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: GENERIC }, { status: 401 });
   }
 
+  if (user.banned) {
+    return NextResponse.json(
+      { error: "This account has been suspended by a moderator." },
+      { status: 403 }
+    );
+  }
+
   await clearFailedLogins(user.id);
   const token = await createSession(user.id);
   const store = await cookies();

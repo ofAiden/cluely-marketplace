@@ -31,6 +31,11 @@ export default async function RootLayout({
               </Link>
               {user ? (
                 <>
+                  {user.is_admin && (
+                    <Link href="/admin" className="text-orange-400 font-semibold hover:text-orange-300">
+                      Admin
+                    </Link>
+                  )}
                   <Link href="/messages" className="text-stone-200 hover:text-white">
                     Messages
                   </Link>
