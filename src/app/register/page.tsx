@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import GoogleButton from "@/components/GoogleButton";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -43,8 +44,9 @@ export default function RegisterPage() {
     <div className="max-w-md mx-auto card p-6 mt-6">
       <h1 className="text-xl font-bold">Register your team</h1>
       <p className="text-sm text-stone-500 mt-1 mb-4">
-        One account per FTC team. You&apos;ll use it to post and buy parts.
+        One account per FTC team. You&apos;ll use it to post parts and message other teams.
       </p>
+      <GoogleButton label="Sign up with Google" />
       <form onSubmit={onSubmit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <label className="block">

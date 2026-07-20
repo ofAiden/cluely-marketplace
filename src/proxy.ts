@@ -4,20 +4,19 @@ import type { NextRequest } from "next/server";
 /**
  * Runs before every request (Next 16 "proxy", formerly middleware).
  *
- * CSRF defense-in-depth: for any state-changing method, the Origin header
- * must match the Host we are actually serving. Combined with SameSite=Lax
- * cookies, this blocks cross-site request forgery.
- *
- * (The Stripe webhook is exempt. It authenticates with a cryptographic
- * signature instead, and never uses cookies.)
+ * Two jobs:
+ *  1. CSRF defense: state-changing requests must have an Origin matching Host.
+ *  2. Content-Security-Policy with a fresh per-request nonce. Script execution
+ *     is limited to 'self' + this nonce (+ strict-dynamic so Next's own chunks,
+ *     loaded by the nonced bootstrap, are trusted). This blocks injected inline
+ *     scripts (XSS) while allowing Next's hydration to run — a static
+ *     `script-src 'self'` would have blocked hydration and broken every form.
  */
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 export function proxy(request: NextRequest) {
-  if (
-    UNSAFE_METHODS.has(request.method) &&
-    request.nextUrl.pathname !== "/api/stripe/webhook"
-  ) {
+  // 1) CSRF: Origin must match the Host we are serving.
+  if (UNSAFE_METHODS.has(request.method)) {
     const origin = request.headers.get("origin");
     const host = request.headers.get("host");
     if (!origin || !host || new URL(origin).host !== host) {
@@ -27,7 +26,33 @@ export function proxy(request: NextRequest) {
       });
     }
   }
-  return NextResponse.next();
+
+  // 2) CSP with a per-request nonce.
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const isDev = process.env.NODE_ENV === "development";
+  const csp = `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""};
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data: https://*.public.blob.vercel-storage.com;
+    font-src 'self';
+    connect-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
+  `
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("content-security-policy", csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("content-security-policy", csp);
+  return response;
 }
 
 export const config = {

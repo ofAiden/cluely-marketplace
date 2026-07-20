@@ -9,6 +9,7 @@ import {
 } from "@/lib/auth";
 import { registerSchema, firstError } from "@/lib/validation";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
+import { sendEmail, registrationEmail } from "@/lib/email";
 import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
@@ -50,5 +51,11 @@ export async function POST(req: Request) {
   const token = await createSession(id);
   const store = await cookies();
   store.set(SESSION_COOKIE, token, sessionCookieOptions());
+
+  // Fire-and-forget confirmation email (no-op unless Resend is configured).
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const mail = registrationEmail(teamName, teamNumber, base);
+  await sendEmail({ to: email, subject: mail.subject, html: mail.html });
+
   return NextResponse.json({ ok: true });
 }

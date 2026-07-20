@@ -88,29 +88,27 @@ export function ensureSchema(): Promise<void> {
         );
         CREATE INDEX IF NOT EXISTS idx_images_listing ON listing_images(listing_id);
 
-        CREATE TABLE IF NOT EXISTS orders (
+        CREATE TABLE IF NOT EXISTS conversations (
           id TEXT PRIMARY KEY,
-          listing_id TEXT NOT NULL REFERENCES listings(id),
-          buyer_id TEXT NOT NULL REFERENCES users(id),
-          amount_cents INTEGER NOT NULL,
-          status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid','cancelled')),
-          payment_provider TEXT NOT NULL DEFAULT 'mock',
-          stripe_session_id TEXT,
+          listing_id TEXT NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+          buyer_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          seller_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','accepted','closed')),
+          created_at INTEGER NOT NULL,
+          last_message_at INTEGER NOT NULL,
+          UNIQUE(listing_id, buyer_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_conv_seller ON conversations(seller_id, last_message_at);
+        CREATE INDEX IF NOT EXISTS idx_conv_buyer ON conversations(buyer_id, last_message_at);
+
+        CREATE TABLE IF NOT EXISTS messages (
+          id TEXT PRIMARY KEY,
+          conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+          sender_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          body TEXT NOT NULL,
           created_at INTEGER NOT NULL
         );
-        CREATE INDEX IF NOT EXISTS idx_orders_buyer ON orders(buyer_id);
-        CREATE INDEX IF NOT EXISTS idx_orders_listing ON orders(listing_id);
-
-        CREATE TABLE IF NOT EXISTS billing_details (
-          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-          full_name TEXT NOT NULL DEFAULT '',
-          address1 TEXT NOT NULL DEFAULT '',
-          address2 TEXT NOT NULL DEFAULT '',
-          city TEXT NOT NULL DEFAULT '',
-          state TEXT NOT NULL DEFAULT 'CA',
-          zip TEXT NOT NULL DEFAULT '',
-          updated_at INTEGER NOT NULL
-        );
+        CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id, created_at);
       `);
       globalForDb.__dbInit = true;
     })();
@@ -172,14 +170,21 @@ export interface ListingWithMeta extends Listing {
   thumb: string | null;
 }
 
-export interface Order {
+export interface Conversation {
   id: string;
   listing_id: string;
   buyer_id: string;
-  amount_cents: number;
-  status: "pending" | "paid" | "cancelled";
-  payment_provider: string;
-  stripe_session_id: string | null;
+  seller_id: string;
+  status: "open" | "accepted" | "closed";
+  created_at: number;
+  last_message_at: number;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  body: string;
   created_at: number;
 }
 

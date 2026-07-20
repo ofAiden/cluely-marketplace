@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { idSchema } from "@/lib/validation";
 import { money, timeAgo, labelize } from "@/lib/format";
 import { imageSrc } from "@/lib/uploads";
-import BuyButton from "@/components/BuyButton";
+import MessageSellerButton from "@/components/MessageSellerButton";
 
 export const dynamic = "force-dynamic";
 
@@ -98,25 +98,22 @@ export default async function ListingPage({
             )}
           </div>
           <div className="ml-auto">
-            {!sold && !isOwner && (
-              <BuyButton
-                listingId={listing.id}
-                signedIn={!!user}
-                free={listing.price_cents < 50}
-              />
-            )}
-            {isOwner && (
+            {sold ? (
+              <span className="text-sm font-semibold text-stone-500">No longer available</span>
+            ) : isOwner ? (
               <Link href="/dashboard" className="btn-secondary btn">
                 Manage in dashboard
               </Link>
+            ) : (
+              <MessageSellerButton listingId={listing.id} signedIn={!!user} />
             )}
           </div>
         </div>
       </div>
 
       <p className="text-xs text-stone-400 mt-3">
-        Safety tip from The Clueless: meet at league meets, scrimmages, or public
-        places for pickups. Payments here run through Stripe test mode.
+        Safety tip from The Clueless: message the seller to agree on a price, then meet
+        at a league meet, scrimmage, or public place to pay in person and pick up.
       </p>
     </div>
   );

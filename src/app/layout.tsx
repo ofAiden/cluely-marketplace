@@ -31,6 +31,9 @@ export default async function RootLayout({
               </Link>
               {user ? (
                 <>
+                  <Link href="/messages" className="text-stone-200 hover:text-white">
+                    Messages
+                  </Link>
                   <Link href="/dashboard" className="text-stone-200 hover:text-white">
                     Team {user.team_number}
                   </Link>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import GoogleButton from "@/components/GoogleButton";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,8 +36,9 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto card p-6 mt-6">
-      <h1 className="text-xl font-bold">Sign in</h1>
-      <form onSubmit={onSubmit} className="space-y-3 mt-4">
+      <h1 className="text-xl font-bold mb-4">Sign in</h1>
+      <GoogleButton label="Sign in with Google" />
+      <form onSubmit={onSubmit} className="space-y-3">
         <label className="block">
           <span className="text-sm font-medium">Team email</span>
           <input className="field mt-1" name="email" type="email" required maxLength={254} />

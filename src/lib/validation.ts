@@ -33,17 +33,23 @@ export const listingStatusSchema = z.object({
   status: z.enum(["active", "sold", "removed"]),
 });
 
-export const billingSchema = z.object({
-  fullName: z.string().trim().min(2).max(80),
-  address1: z.string().trim().min(3).max(120),
-  address2: z.string().trim().max(120).default(""),
-  city: z.string().trim().min(2).max(60),
-  state: z.string().trim().length(2).toUpperCase(),
-  zip: z.string().trim().regex(/^\d{5}(-\d{4})?$/, "Enter a valid ZIP code"),
+// Start a conversation with a seller about a listing (buyer's opening message).
+export const startConversationSchema = z.object({
+  listingId: z.string().regex(/^[a-f0-9]{32}$/),
+  body: z.string().trim().min(1, "Write a message first").max(2000),
 });
 
-export const checkoutSchema = z.object({
-  listingId: z.string().regex(/^[a-f0-9]{32}$/),
+// Send a message in an existing conversation.
+export const sendMessageSchema = z.object({
+  conversationId: z.string().regex(/^[a-f0-9]{32}$/),
+  body: z.string().trim().min(1, "Write a message first").max(2000),
+});
+
+// Complete a Google-based signup by supplying team details.
+export const completeProfileSchema = z.object({
+  teamNumber: z.coerce.number().int().min(1).max(99999),
+  teamName: z.string().trim().min(2).max(60),
+  city: z.string().trim().min(2).max(60).default("San Diego"),
 });
 
 export const idSchema = z.string().regex(/^[a-f0-9]{32}$/);
