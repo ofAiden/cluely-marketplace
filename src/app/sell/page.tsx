@@ -12,7 +12,7 @@ export default async function SellPage() {
       <h1 className="text-2xl font-bold">Post a part</h1>
       <p className="text-sm text-stone-500 mt-1 mb-5">
         Listing as <strong>{user.team_name} · Team {user.team_number}</strong>. Keep
-        titles specific — “REV Core Hex Motor (2)” beats “motors”.
+        titles specific. “REV Core Hex Motor (2)” beats “motors”.
       </p>
       <SellForm />
     </div>

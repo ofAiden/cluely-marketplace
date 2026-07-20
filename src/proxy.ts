@@ -8,7 +8,7 @@ import type { NextRequest } from "next/server";
  * must match the Host we are actually serving. Combined with SameSite=Lax
  * cookies, this blocks cross-site request forgery.
  *
- * (The Stripe webhook is exempt — it authenticates with a cryptographic
+ * (The Stripe webhook is exempt. It authenticates with a cryptographic
  * signature instead, and never uses cookies.)
  */
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);

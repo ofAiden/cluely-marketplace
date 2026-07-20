@@ -6,7 +6,7 @@ import { rateLimit, clientIp } from "@/lib/ratelimit";
 import { getStripe } from "@/lib/stripe";
 
 /**
- * Starts a purchase. Price ALWAYS comes from the database — the client
+ * Starts a purchase. Price ALWAYS comes from the database. The client
  * only sends a listing id, so tampering with the amount is impossible.
  */
 export async function POST(req: Request) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   if (listing.price_cents < 50) {
     // Stripe minimum charge is $0.50; free/cheap parts are contact-only.
     return NextResponse.json(
-      { error: "This part is free or under $0.50 — contact the seller instead." },
+      { error: "This part is free or under $0.50. Contact the seller instead." },
       { status: 400 }
     );
   }
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
           unit_amount: listing.price_cents, // server-side price, never from client
           product_data: {
             name: listing.title.slice(0, 100),
-            description: "FTC part — SD FTC Parts Exchange",
+            description: "FTC part from SD FTC Parts Exchange",
           },
         },
         quantity: 1,

@@ -21,7 +21,7 @@ export default function MockPayForm({ orderId }: { orderId: string }) {
       if (!res.ok) setError(data.error ?? "Payment failed.");
       else router.push(`/checkout/success?order=${orderId}`);
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Please try again.");
     } finally {
       setBusy(false);
     }

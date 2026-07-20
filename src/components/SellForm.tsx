@@ -79,7 +79,7 @@ export default function SellForm() {
         router.refresh();
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -90,7 +90,7 @@ export default function SellForm() {
       <label className="block">
         <span className="text-sm font-medium">Title</span>
         <input className="field mt-1" name="title" required minLength={4} maxLength={90}
-          placeholder="REV Core Hex Motor — pair, barely used" />
+          placeholder="REV Core Hex Motor, pair, barely used" />
       </label>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

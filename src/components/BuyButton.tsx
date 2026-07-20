@@ -40,7 +40,7 @@ export default function BuyButton({
         window.location.href = data.redirect;
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Please try again.");
     } finally {
       setBusy(false);
     }

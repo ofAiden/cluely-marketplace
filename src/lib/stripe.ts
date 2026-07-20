@@ -6,7 +6,7 @@ import Stripe from "stripe";
  * If no key is configured, the app falls back to a clearly-labeled
  * mock checkout so the site works out of the box.
  *
- * Card numbers are NEVER touched by this server — Stripe Checkout
+ * Card numbers are NEVER touched by this server. Stripe Checkout
  * hosts the payment page.
  */
 export function getStripe(): Stripe | null {

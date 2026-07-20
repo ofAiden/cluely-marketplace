@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 
 /**
- * SQLite database via libsql. All queries are parameterized — never
+ * SQLite database via libsql. All queries are parameterized, never
  * interpolate user input into SQL strings.
  */
 

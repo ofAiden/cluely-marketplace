@@ -3,7 +3,7 @@ import { qOne, run, type Order } from "@/lib/db";
 import { getStripe, stripeWebhookSecret } from "@/lib/stripe";
 
 /**
- * Stripe webhook — the ONLY place an order is marked paid when Stripe is
+ * Stripe webhook: the ONLY place an order is marked paid when Stripe is
  * configured. Authenticated by verifying Stripe's cryptographic signature
  * on the raw body; requests without a valid signature are rejected.
  */

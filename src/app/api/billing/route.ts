@@ -5,7 +5,7 @@ import { billingSchema, firstError } from "@/lib/validation";
 
 /**
  * Saves billing/pickup contact details. NOTE: card numbers are never
- * collected or stored by this app — payment details live only with Stripe.
+ * collected or stored by this app. Payment details live only with Stripe.
  */
 export async function POST(req: Request) {
   const user = await getCurrentUser();

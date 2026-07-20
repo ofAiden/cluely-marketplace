@@ -28,7 +28,7 @@ export default async function BillingPage() {
       <h1 className="text-2xl font-bold">Billing &amp; pickup details</h1>
       <p className="text-sm text-stone-500 mt-1 mb-4">
         Used to coordinate local pickup and receipts.{" "}
-        <strong>Card numbers are never stored here</strong> — payments are handled
+        <strong>Card numbers are never stored here.</strong> Payments are handled
         entirely by Stripe.
       </p>
       <BillingForm

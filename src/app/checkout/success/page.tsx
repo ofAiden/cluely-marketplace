@@ -35,12 +35,12 @@ export default async function CheckoutSuccess({
         {paid ? "Order complete!" : "Payment processing…"}
       </h1>
       <p className="text-stone-600 mt-2">
-        <strong>{order.title}</strong> — {money(order.amount_cents)}
+        <strong>{order.title}</strong> · {money(order.amount_cents)}
       </p>
       {paid ? (
         <p className="text-sm text-stone-500 mt-3">
           Email <a className="link" href={`mailto:${order.seller_email}`}>Team {order.team_number}</a>{" "}
-          to arrange pickup — league meets and scrimmages work great.
+          to arrange pickup. League meets and scrimmages work great.
         </p>
       ) : (
         <p className="text-sm text-stone-500 mt-3">

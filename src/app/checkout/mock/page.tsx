@@ -28,7 +28,7 @@ export default async function MockCheckout({
   return (
     <div className="max-w-md mx-auto mt-6">
       <div className="rounded-t-xl bg-amber-400 text-amber-950 text-center text-xs font-bold uppercase tracking-wide py-1.5">
-        Test checkout — no real payment
+        Test checkout, no real payment
       </div>
       <div className="card !rounded-t-none p-6">
         <h1 className="text-lg font-bold">{order.title}</h1>

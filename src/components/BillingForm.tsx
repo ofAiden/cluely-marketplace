@@ -36,7 +36,7 @@ export default function BillingForm({ initial }: { initial: Initial }) {
       const data = await res.json();
       setMsg(res.ok ? { ok: true, text: "Saved." } : { ok: false, text: data.error ?? "Could not save." });
     } catch {
-      setMsg({ ok: false, text: "Network error — try again." });
+      setMsg({ ok: false, text: "Network error. Please try again." });
     } finally {
       setBusy(false);
     }

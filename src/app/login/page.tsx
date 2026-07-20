@@ -27,7 +27,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Please try again.");
     } finally {
       setBusy(false);
     }

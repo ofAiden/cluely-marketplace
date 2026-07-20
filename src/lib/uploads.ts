@@ -6,7 +6,7 @@ import crypto from "crypto";
 /**
  * Image uploads.
  * - Stored OUTSIDE the web root (data/uploads) and served through a
- *   controlled route handler — never executed, never path-traversable.
+ *   controlled route handler, never executed, never path-traversable.
  * - Type is verified by MAGIC BYTES, not by the client-supplied name
  *   or content-type (both are attacker-controlled).
  * - Random hex filenames; the original filename is discarded entirely.

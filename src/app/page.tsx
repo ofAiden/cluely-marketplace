@@ -55,7 +55,7 @@ export default async function Home({
             Spare FTC parts, <span className="text-orange-500">San Diego prices</span>
           </h1>
           <p className="text-stone-300 text-sm mt-1">
-            A parts exchange for San Diego FTC teams — built and run by{" "}
+            A parts exchange for San Diego FTC teams, built and run by{" "}
             <span className="font-semibold text-orange-400">The Clueless · Team 11212</span>
           </p>
         </div>
@@ -65,7 +65,7 @@ export default async function Home({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
-        {/* Sidebar — craigslist-style category list */}
+        {/* Sidebar: craigslist-style category list */}
         <aside>
           <form action="/" className="mb-4 flex gap-2">
             <input
