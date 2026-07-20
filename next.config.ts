@@ -14,7 +14,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@libsql/client"],
+  serverExternalPackages: ["@libsql/client", "nodemailer"],
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

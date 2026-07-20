@@ -1,13 +1,14 @@
 import "server-only";
 
 /**
- * Transactional email via Resend (https://resend.com).
- * Gated on RESEND_API_KEY + EMAIL_FROM. If either is missing the app runs
- * normally and simply skips sending, so email is fully optional.
+ * Transactional email via Gmail SMTP (Nodemailer).
+ * Gated on GMAIL_USER + GMAIL_APP_PASSWORD (a Google App Password, which
+ * requires 2-Step Verification on that Gmail account). If either is missing
+ * the app runs normally and simply skips sending, so email is fully optional.
  * Sending never throws into the caller — a mail failure must not break signup.
  */
 export function emailConfigured(): boolean {
-  return !!(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+  return !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
 }
 
 export async function sendEmail(opts: {
@@ -15,18 +16,20 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
 }): Promise<void> {
-  const key = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!key || !from) return;
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) return;
   try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${key}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ from, to: [opts.to], subject: opts.subject, html: opts.html }),
+    const nodemailer = (await import("nodemailer")).default;
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      // App Passwords are shown with spaces for readability but work without them.
+      auth: { user, pass: pass.replace(/\s+/g, "") },
     });
+    const from = process.env.EMAIL_FROM || `SD FTC Parts Exchange <${user}>`;
+    await transporter.sendMail({ from, to: opts.to, subject: opts.subject, html: opts.html });
   } catch {
     // Non-fatal.
   }
