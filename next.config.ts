@@ -13,7 +13,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self'",
       "style-src 'self' 'unsafe-inline'", // Tailwind inlines style attrs; no external styles allowed
-      "img-src 'self' data:",
+      "img-src 'self' data: https://*.public.blob.vercel-storage.com",
       "font-src 'self'",
       "connect-src 'self'",
       "frame-ancestors 'none'",

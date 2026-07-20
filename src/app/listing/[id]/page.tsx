@@ -4,6 +4,7 @@ import { q, qOne, type Listing } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { idSchema } from "@/lib/validation";
 import { money, timeAgo, labelize } from "@/lib/format";
+import { imageSrc } from "@/lib/uploads";
 import BuyButton from "@/components/BuyButton";
 
 export const dynamic = "force-dynamic";
@@ -68,7 +69,7 @@ export default async function ListingPage({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={img.filename}
-                src={`/api/images/${img.filename}`}
+                src={imageSrc(img.filename)}
                 alt={listing.title}
                 className="rounded-lg border border-stone-200 object-cover w-full aspect-square"
               />

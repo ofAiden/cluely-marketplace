@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { q, CATEGORIES, type ListingWithMeta } from "@/lib/db";
 import { money, timeAgo, labelize } from "@/lib/format";
+import { imageSrc } from "@/lib/uploads";
 
 export const dynamic = "force-dynamic";
 
@@ -153,7 +154,7 @@ export default async function Home({
                       {l.thumb ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={`/api/images/${l.thumb}`}
+                          src={imageSrc(l.thumb)}
                           alt=""
                           className="w-full h-full object-cover"
                         />

@@ -7,14 +7,28 @@ import fs from "fs";
  * interpolate user input into SQL strings.
  */
 
-const DATA_DIR = path.join(process.cwd(), "data");
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+/**
+ * In production (Vercel), set TURSO_DATABASE_URL + TURSO_AUTH_TOKEN and the
+ * app talks to a hosted Turso database over the same libsql protocol.
+ * Locally, with no env vars, it falls back to a SQLite file in ./data.
+ */
+const REMOTE_URL = process.env.TURSO_DATABASE_URL;
+
+function makeClient(): Client {
+  if (REMOTE_URL) {
+    return createClient({
+      url: REMOTE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+  }
+  const DATA_DIR = path.join(process.cwd(), "data");
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  return createClient({ url: `file:${path.join(DATA_DIR, "market.db")}` });
+}
 
 const globalForDb = globalThis as unknown as { __db?: Client; __dbInit?: boolean };
 
-export const db: Client =
-  globalForDb.__db ??
-  createClient({ url: `file:${path.join(DATA_DIR, "market.db")}` });
+export const db: Client = globalForDb.__db ?? makeClient();
 globalForDb.__db = db;
 
 let initPromise: Promise<void> | null = null;
@@ -23,10 +37,14 @@ export function ensureSchema(): Promise<void> {
   if (globalForDb.__dbInit) return Promise.resolve();
   if (!initPromise) {
     initPromise = (async () => {
+      if (!REMOTE_URL) {
+        // Local file DB tuning; Turso manages this itself server-side.
+        await db.executeMultiple(`
+          PRAGMA journal_mode = WAL;
+          PRAGMA foreign_keys = ON;
+        `);
+      }
       await db.executeMultiple(`
-        PRAGMA journal_mode = WAL;
-        PRAGMA foreign_keys = ON;
-
         CREATE TABLE IF NOT EXISTS users (
           id TEXT PRIMARY KEY,
           email TEXT NOT NULL UNIQUE,

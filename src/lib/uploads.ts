@@ -45,14 +45,34 @@ export function sniffImage(buf: Buffer): { ext: string; mime: string } | null {
   return null;
 }
 
+/**
+ * Saves a validated image and returns either a full https URL (Vercel Blob,
+ * production) or a bare filename (local disk fallback for development).
+ */
 export async function saveImage(buf: Buffer): Promise<string | null> {
   if (buf.length === 0 || buf.length > MAX_IMAGE_BYTES) return null;
   const kind = sniffImage(buf);
   if (!kind) return null;
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
   const name = `${crypto.randomBytes(16).toString("hex")}.${kind.ext}`;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const { put } = await import("@vercel/blob");
+    const blob = await put(`listings/${name}`, buf, {
+      access: "public",
+      contentType: kind.mime,
+      addRandomSuffix: false,
+    });
+    return blob.url;
+  }
+
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
   await fs.writeFile(path.join(UPLOAD_DIR, name), buf, { flag: "wx" });
   return name;
+}
+
+/** Resolve a stored image reference (blob URL or local filename) to a src. */
+export function imageSrc(ref: string): string {
+  return ref.startsWith("https://") ? ref : `/api/images/${ref}`;
 }
 
 /** Strict allowlist for serving: 32 hex chars + known extension. */
