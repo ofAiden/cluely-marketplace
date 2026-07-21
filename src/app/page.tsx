@@ -169,7 +169,9 @@ export default async function Home({
                           {l.price_cents === 0 ? "free" : money(l.price_cents)}
                         </span>
                       </div>
-                      <p className="text-sm text-stone-500 truncate">{l.description}</p>
+                      <p className="text-sm text-stone-500 line-clamp-2 break-words [overflow-wrap:anywhere]">
+                        {l.description}
+                      </p>
                       <p className="text-xs text-stone-400 mt-1">
                         {labelize(l.condition)} · {labelize(l.category)} · Team{" "}
                         {l.team_number}

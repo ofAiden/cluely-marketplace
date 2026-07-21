@@ -6,6 +6,7 @@ import { idSchema } from "@/lib/validation";
 import { money, timeAgo, labelize } from "@/lib/format";
 import { imageSrc } from "@/lib/uploads";
 import MessageSellerButton from "@/components/MessageSellerButton";
+import Description from "@/components/Description";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,9 @@ export default async function ListingPage({
       <div className="card mt-3 p-6">
         <div className="flex items-start gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold">{listing.title}</h1>
+            <h1 className="text-2xl font-bold break-words [overflow-wrap:anywhere]">
+              {listing.title}
+            </h1>
             <p className="text-sm text-stone-500 mt-1">
               {labelize(listing.condition)} · {labelize(listing.category)}
               {listing.neighborhood ? ` · ${listing.neighborhood}` : ""} · posted{" "}
@@ -77,7 +80,7 @@ export default async function ListingPage({
           </div>
         )}
 
-        <p className="mt-5 whitespace-pre-wrap leading-relaxed">{listing.description}</p>
+        <Description text={listing.description} />
 
         <div className="mt-6 border-t border-stone-200 pt-4 flex items-center gap-4 flex-wrap">
           <div className="text-sm">
