@@ -11,8 +11,26 @@ export default async function Dashboard() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const myListings = await q<Listing>(
-    "SELECT * FROM listings WHERE seller_id = ? AND status != 'removed' ORDER BY created_at DESC",
+  // The accepted conversation is the record of who bought the part — `accept`
+  // closes every other thread on that listing, so there is at most one.
+  const myListings = await q<
+    Listing & {
+      conv_id: string | null;
+      buyer_team_number: number | null;
+      buyer_team_name: string | null;
+      buyer_email: string | null;
+    }
+  >(
+    `SELECT l.*,
+            c.id    AS conv_id,
+            b.team_number AS buyer_team_number,
+            b.team_name   AS buyer_team_name,
+            b.email       AS buyer_email
+       FROM listings l
+       LEFT JOIN conversations c ON c.listing_id = l.id AND c.status = 'accepted'
+       LEFT JOIN users b ON b.id = c.buyer_id
+      WHERE l.seller_id = ? AND l.status != 'removed'
+      ORDER BY l.created_at DESC`,
     [user.id]
   );
   const convCount = await qOne<{ n: number }>(
@@ -62,6 +80,31 @@ export default async function Dashboard() {
                     {money(l.price_cents)} · {timeAgo(l.created_at)} ·{" "}
                     <span className={l.status === "sold" ? "font-bold" : ""}>{l.status}</span>
                   </p>
+                  {l.buyer_team_name && l.conv_id ? (
+                    <p className="text-xs text-green-800 mt-0.5">
+                      Sold to{" "}
+                      <Link href={`/messages/${l.conv_id}`} className="link font-semibold">
+                        {l.buyer_team_name} · Team {l.buyer_team_number}
+                      </Link>
+                      {l.buyer_email ? (
+                        <>
+                          {" "}
+                          ·{" "}
+                          <a className="link" href={`mailto:${l.buyer_email}`}>
+                            {l.buyer_email}
+                          </a>
+                        </>
+                      ) : null}
+                    </p>
+                  ) : l.status === "sold" ? (
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      Marked sold by hand — open the buyer&apos;s{" "}
+                      <Link href="/messages" className="link">
+                        conversation
+                      </Link>{" "}
+                      and tap “Accept this buyer” to record who bought it.
+                    </p>
+                  ) : null}
                 </div>
                 <div className="ml-auto">
                   <ListingActions id={l.id} status={l.status} />

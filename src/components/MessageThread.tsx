@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { clockTime, dayLabel, fullStamp } from "@/lib/format";
 import { refreshUnreadBadge } from "@/components/UnreadBadge";
 
+/** Messages from one person inside this window stack as a single burst. */
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
+
 interface Msg {
   id: string;
   sender_id: string;
@@ -131,17 +134,30 @@ export default function MessageThread({
         </div>
       )}
 
-      <div className="card p-3 space-y-2 max-h-[55vh] overflow-y-auto">
+      <div className="card p-3 max-h-[55vh] overflow-y-auto">
         {messages.length === 0 ? (
           <p className="text-sm text-stone-400 text-center py-6">No messages yet. Say hello!</p>
         ) : (
           messages.map((m, i) => {
             const mine = m.sender_id === currentUserId;
-            // A divider whenever the calendar day changes (and above the first).
             const prev = messages[i - 1];
+            const next = messages[i + 1];
+            // A divider whenever the calendar day changes (and above the first).
             const newDay = !prev || dayLabel(prev.created_at) !== dayLabel(m.created_at);
+            // Messages from the same person in quick succession read as one
+            // burst, so stack them tight and only stamp the last of the run.
+            const joinsPrev =
+              !newDay &&
+              !!prev &&
+              prev.sender_id === m.sender_id &&
+              m.created_at - prev.created_at < GROUP_WINDOW_MS;
+            const endsGroup =
+              !next ||
+              next.sender_id !== m.sender_id ||
+              next.created_at - m.created_at >= GROUP_WINDOW_MS ||
+              dayLabel(next.created_at) !== dayLabel(m.created_at);
             return (
-              <div key={m.id}>
+              <div key={m.id} className={joinsPrev ? "mt-0.5" : "mt-2 first:mt-0"}>
                 {newDay && (
                   <div className="flex items-center gap-3 py-2">
                     <span className="h-px flex-1 bg-stone-200" />
@@ -153,18 +169,23 @@ export default function MessageThread({
                 )}
                 <div className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
                   <div
+                    title={fullStamp(m.created_at)}
                     className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere] ${
                       mine ? "bg-orange-600 text-white" : "bg-stone-100 text-stone-900"
+                    } ${joinsPrev ? (mine ? "rounded-tr-md" : "rounded-tl-md") : ""} ${
+                      !endsGroup ? (mine ? "rounded-br-md" : "rounded-bl-md") : ""
                     }`}
                   >
                     {m.body}
                   </div>
-                  <span
-                    className="text-[11px] text-stone-400 mt-0.5 px-1"
-                    title={fullStamp(m.created_at)}
-                  >
-                    {clockTime(m.created_at)}
-                  </span>
+                  {endsGroup && (
+                    <span
+                      className="text-[11px] text-stone-400 mt-0.5 px-1"
+                      title={fullStamp(m.created_at)}
+                    >
+                      {clockTime(m.created_at)}
+                    </span>
+                  )}
                 </div>
               </div>
             );

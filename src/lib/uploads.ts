@@ -70,6 +70,26 @@ export async function saveImage(buf: Buffer): Promise<string | null> {
   return name;
 }
 
+/**
+ * Best-effort delete of a stored image. Called when a seller removes a photo
+ * while editing. Failure here is never fatal: the listing_images row is gone
+ * either way, so the worst case is an orphaned blob nobody links to.
+ */
+export async function deleteImage(ref: string): Promise<void> {
+  try {
+    if (ref.startsWith("https://")) {
+      if (!process.env.BLOB_READ_WRITE_TOKEN) return;
+      const { del } = await import("@vercel/blob");
+      await del(ref);
+      return;
+    }
+    if (!SAFE_IMAGE_NAME.test(ref)) return; // never let a name escape the dir
+    await fs.unlink(path.join(UPLOAD_DIR, ref));
+  } catch {
+    /* already gone, or storage hiccup — not worth failing the edit over */
+  }
+}
+
 /** Resolve a stored image reference (blob URL or local filename) to a src. */
 export function imageSrc(ref: string): string {
   return ref.startsWith("https://") ? ref : `/api/images/${ref}`;
