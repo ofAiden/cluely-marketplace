@@ -290,7 +290,10 @@ export default function EditListingForm({
           onChange={(e) => addFiles(e.currentTarget.files)}
         />
 
-        {total === 0 ? (
+        {/* Gate the empty state on how many tiles there are to draw, not on
+            `total` — a photo ticked off still needs its tile so the ↺ is
+            reachable, otherwise dropping your only photo is irreversible. */}
+        {photos.length + newPhotos.length === 0 ? (
           <p className="text-sm text-stone-400 border border-dashed border-stone-300 rounded-lg py-6 text-center">
             No photos yet. Listings with a photo get far more messages.
           </p>
