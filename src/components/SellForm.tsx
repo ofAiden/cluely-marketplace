@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const CATEGORIES = [
@@ -45,9 +45,16 @@ export default function SellForm() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // Synchronous re-entry guard. `busy` state only disables the button on the
+  // NEXT render, so a fast double-click can fire two submits before React
+  // repaints — especially since we await image compression before POSTing.
+  // A ref flips immediately, so the second submit is dropped outright.
+  const submitting = useRef(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (submitting.current) return; // already posting — ignore the extra click
+    submitting.current = true;
     setBusy(true);
     setError("");
     const form = e.currentTarget;
@@ -57,6 +64,7 @@ export default function SellForm() {
     const dollars = parseFloat((f.get("price") as string) || "0");
     if (isNaN(dollars) || dollars < 0 || dollars > 10000) {
       setError("Price must be between $0 and $10,000.");
+      submitting.current = false;
       setBusy(false);
       return;
     }
@@ -73,14 +81,19 @@ export default function SellForm() {
     try {
       const res = await fetch("/api/listings", { method: "POST", body: f });
       const data = await res.json();
-      if (!res.ok) setError(data.error ?? "Could not create listing.");
-      else {
+      if (!res.ok) {
+        setError(data.error ?? "Could not create listing.");
+        submitting.current = false;
+        setBusy(false);
+      } else {
+        // Success: stay disabled through the navigation so the form can't be
+        // resubmitted while the new listing page is loading.
         router.push(`/listing/${data.id}`);
         router.refresh();
       }
     } catch {
       setError("Network error. Please try again.");
-    } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }

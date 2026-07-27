@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { q } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { timeAgo } from "@/lib/format";
+import { listStamp, fullStamp } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -82,8 +82,13 @@ export default async function MessagesPage() {
                       sold
                     </span>
                   )}
-                  <span className="ml-auto text-xs text-stone-400 whitespace-nowrap">
-                    {timeAgo(r.last_message_at)}
+                  <span
+                    className={`ml-auto text-xs whitespace-nowrap ${
+                      r.unread > 0 ? "text-red-600 font-semibold" : "text-stone-400"
+                    }`}
+                    title={fullStamp(r.last_message_at)}
+                  >
+                    {listStamp(r.last_message_at)}
                   </span>
                 </div>
                 <div className={`text-sm truncate ${r.unread > 0 ? "text-stone-700" : "text-stone-500"}`}>

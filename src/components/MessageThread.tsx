@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { clockTime, dayLabel, fullStamp } from "@/lib/format";
+import { refreshUnreadBadge } from "@/components/UnreadBadge";
 
 interface Msg {
   id: string;
@@ -36,6 +38,7 @@ export default function MessageThread({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const countRef = useRef(initialMessages.length);
 
   const isAccepted = status === "accepted" || accepted;
   const isClosed = status === "closed" || closed;
@@ -44,6 +47,12 @@ export default function MessageThread({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
+  // Opening the thread marked it read on the server, so drop the header badge
+  // straight away instead of waiting for the next page load.
+  useEffect(() => {
+    refreshUnreadBadge();
+  }, [conversationId]);
+
   // Poll for new messages every 5s.
   useEffect(() => {
     const t = setInterval(async () => {
@@ -51,7 +60,13 @@ export default function MessageThread({
         const res = await fetch(`/api/messages?conversationId=${conversationId}`);
         if (!res.ok) return;
         const data = await res.json();
-        if (Array.isArray(data.messages)) setMessages(data.messages);
+        if (Array.isArray(data.messages)) {
+          // The poll also marks the thread read, so a message that arrives
+          // while you are sitting here should not light the badge up.
+          if (data.messages.length !== countRef.current) refreshUnreadBadge();
+          countRef.current = data.messages.length;
+          setMessages(data.messages);
+        }
         if (data.status) setStatus(data.status);
       } catch {
         /* ignore transient poll errors */
@@ -120,16 +135,36 @@ export default function MessageThread({
         {messages.length === 0 ? (
           <p className="text-sm text-stone-400 text-center py-6">No messages yet. Say hello!</p>
         ) : (
-          messages.map((m) => {
+          messages.map((m, i) => {
             const mine = m.sender_id === currentUserId;
+            // A divider whenever the calendar day changes (and above the first).
+            const prev = messages[i - 1];
+            const newDay = !prev || dayLabel(prev.created_at) !== dayLabel(m.created_at);
             return (
-              <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
-                    mine ? "bg-orange-600 text-white" : "bg-stone-100 text-stone-900"
-                  }`}
-                >
-                  {m.body}
+              <div key={m.id}>
+                {newDay && (
+                  <div className="flex items-center gap-3 py-2">
+                    <span className="h-px flex-1 bg-stone-200" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+                      {dayLabel(m.created_at)}
+                    </span>
+                    <span className="h-px flex-1 bg-stone-200" />
+                  </div>
+                )}
+                <div className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere] ${
+                      mine ? "bg-orange-600 text-white" : "bg-stone-100 text-stone-900"
+                    }`}
+                  >
+                    {m.body}
+                  </div>
+                  <span
+                    className="text-[11px] text-stone-400 mt-0.5 px-1"
+                    title={fullStamp(m.created_at)}
+                  >
+                    {clockTime(m.created_at)}
+                  </span>
                 </div>
               </div>
             );

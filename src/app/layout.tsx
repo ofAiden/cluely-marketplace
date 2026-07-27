@@ -4,6 +4,7 @@ import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
 import { unreadMessageCount } from "@/lib/db";
 import LogoutButton from "@/components/LogoutButton";
+import UnreadBadge from "@/components/UnreadBadge";
 
 export const metadata: Metadata = {
   title: "SD FTC Parts Exchange",
@@ -43,14 +44,7 @@ export default async function RootLayout({
                     className="relative text-stone-200 hover:text-white"
                   >
                     Messages
-                    {unread > 0 && (
-                      <span
-                        className="absolute -top-2 -right-3 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[11px] font-bold leading-none"
-                        aria-label={`${unread} unread messages`}
-                      >
-                        {unread > 99 ? "99+" : unread}
-                      </span>
-                    )}
+                    <UnreadBadge initial={unread} />
                   </Link>
                   <Link href="/dashboard" className="text-stone-200 hover:text-white">
                     Team {user.team_number}

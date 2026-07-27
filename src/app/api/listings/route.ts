@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { run, newIdSafe } from "@/lib/db-helpers";
+import { qOne, run, newIdSafe } from "@/lib/db-helpers";
 import { getCurrentUser, newId } from "@/lib/auth";
 import { listingSchema, firstError } from "@/lib/validation";
 import { rateLimit } from "@/lib/ratelimit";
@@ -32,6 +32,19 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });
   }
+
+  // DOUBLE-SUBMIT GUARD. The client already blocks a second click, but a
+  // retried request or a flaky connection can still deliver the same listing
+  // twice. If this seller posted an identical listing seconds ago, return that
+  // one instead of creating a duplicate — and do it before uploading photos.
+  const dupe = await qOne<{ id: string }>(
+    `SELECT id FROM listings
+      WHERE seller_id = ? AND title = ? AND price_cents = ? AND status = 'active'
+        AND created_at > ?
+      ORDER BY created_at DESC LIMIT 1`,
+    [user.id, parsed.data.title, parsed.data.priceCents, Date.now() - 60_000]
+  );
+  if (dupe) return NextResponse.json({ ok: true, id: dupe.id, duplicate: true });
 
   const files = form.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
   if (files.length > MAX_IMAGES_PER_LISTING) {
