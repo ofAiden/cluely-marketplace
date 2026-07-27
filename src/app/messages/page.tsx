@@ -77,11 +77,22 @@ export default async function MessagesPage() {
                   <span className={`truncate ${r.unread > 0 ? "font-bold" : "font-semibold"}`}>
                     {r.title}
                   </span>
-                  {r.listing_status === "sold" && (
-                    <span className="text-[10px] font-bold uppercase bg-stone-800 text-white rounded px-1.5 py-0.5">
+                  {/* The accepted thread is the deal that actually happened, so
+                      it gets its own green badge — you can tell at a glance which
+                      of five people about the same part is the one you sold to. */}
+                  {r.status === "accepted" ? (
+                    <span className="shrink-0 text-[10px] font-bold uppercase bg-green-700 text-white rounded px-1.5 py-0.5">
+                      {r.role === "seller" ? "✓ sold to them" : "✓ you bought it"}
+                    </span>
+                  ) : r.status === "closed" ? (
+                    <span className="shrink-0 text-[10px] font-bold uppercase bg-stone-200 text-stone-500 rounded px-1.5 py-0.5">
+                      sold to someone else
+                    </span>
+                  ) : r.listing_status === "sold" ? (
+                    <span className="shrink-0 text-[10px] font-bold uppercase bg-stone-800 text-white rounded px-1.5 py-0.5">
                       sold
                     </span>
-                  )}
+                  ) : null}
                   <span
                     className={`ml-auto text-xs whitespace-nowrap ${
                       r.unread > 0 ? "text-red-600 font-semibold" : "text-stone-400"

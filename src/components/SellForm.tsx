@@ -115,6 +115,10 @@ export default function SellForm() {
         <span className="text-sm font-medium">Photos (up to 6, JPEG/PNG/WebP, 5 MB each)</span>
         <input className="field mt-1" name="images" type="file" multiple
           accept="image/jpeg,image/png,image/webp" />
+        <span className="text-xs text-stone-500 mt-1 block">
+          The first one is the thumbnail teams see while browsing — you can change
+          which one, and add more, by editing the listing afterwards.
+        </span>
       </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

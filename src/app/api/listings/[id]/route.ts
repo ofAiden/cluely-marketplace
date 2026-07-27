@@ -136,15 +136,35 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
     await run("DELETE FROM listing_images WHERE id = ?", [img.id]);
     await deleteImage(img.filename); // best effort; never fails the edit
   }
-  // Renumber what's left, then append the new photos after it.
-  for (let i = 0; i < keeping.length; i++) {
-    await run("UPDATE listing_images SET position = ? WHERE id = ?", [i, keeping[i].id]);
+
+  // Photo order, kept photos first then the new uploads. Position 0 is the
+  // thumbnail everywhere (browse cards do ORDER BY position LIMIT 1), so
+  // "make this the thumbnail" is really "move this to the front".
+  const ordered: ({ rowId: string } | { newName: string })[] = [
+    ...keeping.map((k) => ({ rowId: k.id })),
+    ...savedNames.map((n) => ({ newName: n })),
+  ];
+  const thumbName = form.get("thumbnail");
+  const thumbNew = form.get("thumbnailNew");
+  let pick = -1;
+  if (typeof thumbName === "string" && thumbName) {
+    pick = keeping.findIndex((k) => k.filename === thumbName);
+  } else if (typeof thumbNew === "string" && /^\d+$/.test(thumbNew)) {
+    const n = Number(thumbNew);
+    if (n < savedNames.length) pick = keeping.length + n;
   }
-  for (let i = 0; i < savedNames.length; i++) {
-    await run(
-      "INSERT INTO listing_images (id, listing_id, filename, position) VALUES (?, ?, ?, ?)",
-      [newId(), id, savedNames[i], keeping.length + i]
-    );
+  if (pick > 0) ordered.unshift(...ordered.splice(pick, 1));
+
+  for (let i = 0; i < ordered.length; i++) {
+    const item = ordered[i];
+    if ("rowId" in item) {
+      await run("UPDATE listing_images SET position = ? WHERE id = ?", [i, item.rowId]);
+    } else {
+      await run(
+        "INSERT INTO listing_images (id, listing_id, filename, position) VALUES (?, ?, ?, ?)",
+        [newId(), id, item.newName, i]
+      );
+    }
   }
 
   return NextResponse.json({ ok: true, id });
