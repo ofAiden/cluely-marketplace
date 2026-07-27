@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { qOne, q, run, type Conversation, type Message } from "@/lib/db";
+import { qOne, q, run, markConversationRead, type Conversation, type Message } from "@/lib/db";
 import { getCurrentUser, newId } from "@/lib/auth";
 import { sendMessageSchema, idSchema, firstError } from "@/lib/validation";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
@@ -21,6 +21,8 @@ export async function GET(req: Request) {
     "SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 500",
     [convId]
   );
+  // Actively viewing the thread keeps it marked read, so the badge stays cleared.
+  await markConversationRead(convId, conv.seller_id === user.id);
   return NextResponse.json({ messages, status: conv.status });
 }
 

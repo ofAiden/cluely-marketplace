@@ -45,7 +45,7 @@ export async function POST(req: Request) {
        VALUES (?, ?, ?, ?, 'open', ?, ?)`,
       [id, listing.id, user.id, listing.seller_id, now, now]
     );
-    conv = { id, listing_id: listing.id, buyer_id: user.id, seller_id: listing.seller_id, status: "open", created_at: now, last_message_at: now };
+    conv = { id, listing_id: listing.id, buyer_id: user.id, seller_id: listing.seller_id, status: "open", created_at: now, last_message_at: now, buyer_last_read_at: 0, seller_last_read_at: 0 };
   }
 
   await run(

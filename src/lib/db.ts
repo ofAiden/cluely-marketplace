@@ -127,6 +127,18 @@ export function ensureSchema(): Promise<void> {
         // Column already exists — ignore.
       }
 
+      // Idempotent migration: per-participant "last read" markers for unread
+      // message badges. Default 0 means "never read" (everything counts unread).
+      for (const col of ["buyer_last_read_at", "seller_last_read_at"]) {
+        try {
+          await db.execute(
+            `ALTER TABLE conversations ADD COLUMN ${col} INTEGER NOT NULL DEFAULT 0`
+          );
+        } catch {
+          // Column already exists — ignore.
+        }
+      }
+
       globalForDb.__dbInit = true;
     })();
   }
@@ -196,6 +208,35 @@ export interface Conversation {
   status: "open" | "accepted" | "closed";
   created_at: number;
   last_message_at: number;
+  buyer_last_read_at: number;
+  seller_last_read_at: number;
+}
+
+/**
+ * Total number of messages the user hasn't seen yet: messages in any of their
+ * conversations, sent by the other party, newer than the user's last-read mark
+ * for that conversation. Every param is the same user id, so ordering is moot.
+ */
+export async function unreadMessageCount(userId: string): Promise<number> {
+  const row = await qOne<{ n: number }>(
+    `SELECT COUNT(*) AS n
+       FROM messages m
+       JOIN conversations c ON c.id = m.conversation_id
+      WHERE m.sender_id != ?
+        AND ((c.buyer_id = ?  AND m.created_at > c.buyer_last_read_at)
+          OR (c.seller_id = ? AND m.created_at > c.seller_last_read_at))`,
+    [userId, userId, userId]
+  );
+  return row?.n ?? 0;
+}
+
+/** Mark a conversation read for one participant (clears its unread messages). */
+export async function markConversationRead(
+  conversationId: string,
+  isSeller: boolean
+): Promise<void> {
+  const col = isSeller ? "seller_last_read_at" : "buyer_last_read_at";
+  await run(`UPDATE conversations SET ${col} = ? WHERE id = ?`, [Date.now(), conversationId]);
 }
 
 export interface Message {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
+import { unreadMessageCount } from "@/lib/db";
 import LogoutButton from "@/components/LogoutButton";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const user = await getCurrentUser();
+  const unread = user ? await unreadMessageCount(user.id) : 0;
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
@@ -36,8 +38,19 @@ export default async function RootLayout({
                       Admin
                     </Link>
                   )}
-                  <Link href="/messages" className="text-stone-200 hover:text-white">
+                  <Link
+                    href="/messages"
+                    className="relative text-stone-200 hover:text-white"
+                  >
                     Messages
+                    {unread > 0 && (
+                      <span
+                        className="absolute -top-2 -right-3 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[11px] font-bold leading-none"
+                        aria-label={`${unread} unread messages`}
+                      >
+                        {unread > 99 ? "99+" : unread}
+                      </span>
+                    )}
                   </Link>
                   <Link href="/dashboard" className="text-stone-200 hover:text-white">
                     Team {user.team_number}

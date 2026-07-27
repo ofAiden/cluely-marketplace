@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { qOne, q, type Conversation, type Message } from "@/lib/db";
+import { qOne, q, markConversationRead, type Conversation, type Message } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { idSchema } from "@/lib/validation";
 import { money } from "@/lib/format";
@@ -39,6 +39,8 @@ export default async function ThreadPage({ params }: { params: Promise<{ id: str
   if (!conv || (conv.buyer_id !== user.id && conv.seller_id !== user.id)) notFound();
 
   const isSeller = conv.seller_id === user.id;
+  // Opening the thread clears its unread messages for this participant.
+  await markConversationRead(conv.id, isSeller);
   const messages = await q<Message>(
     "SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 500",
     [id]
