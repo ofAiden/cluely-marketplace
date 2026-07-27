@@ -137,8 +137,10 @@ export default function EditListingForm({
   function toggleDropped(filename: string) {
     const dropping = !dropped.includes(filename);
     setDropped(dropping ? [...dropped, filename] : dropped.filter((f) => f !== filename));
-    // Don't leave the thumbnail pointing at a photo that's on its way out.
+    // Don't leave the thumbnail pointing at a photo that's on its way out —
+    // and put the star back if undoing the removal leaves nothing selected.
     if (dropping && thumb === `existing:${filename}`) setThumb(null);
+    if (!dropping && thumb === null) setThumb(`existing:${filename}`);
   }
 
   function addFiles(list: FileList | null) {
