@@ -58,9 +58,25 @@ export default async function RootLayout({
           </div>
         </header>
         <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-6">{children}</main>
-        <footer className="border-t border-stone-200 text-center text-xs text-stone-500 py-6">
-          Built by <span className="font-semibold text-orange-600">The Clueless · FTC Team 11212</span>{" "}
-          for San Diego FTC teams · Not affiliated with <span className="italic">FIRST</span>®
+        <footer className="border-t border-stone-200 text-center text-xs text-stone-500 py-6 space-y-2">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <a
+              href="https://www.thecluelessftc.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link font-semibold"
+            >
+              The Clueless website
+            </a>
+            <span className="text-stone-300">·</span>
+            <a href="mailto:ftc11212@gmail.com" className="link font-semibold">
+              Contact us
+            </a>
+          </div>
+          <div>
+            Built by <span className="font-semibold text-orange-600">The Clueless · FTC Team 11212</span>{" "}
+            for San Diego FTC teams · Not affiliated with <span className="italic">FIRST</span>®
+          </div>
         </footer>
       </body>
     </html>
