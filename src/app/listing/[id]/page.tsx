@@ -7,6 +7,7 @@ import { money, timeAgo, labelize } from "@/lib/format";
 import { imageSrc } from "@/lib/uploads";
 import MessageSellerButton from "@/components/MessageSellerButton";
 import Description from "@/components/Description";
+import TakeDownButton from "@/components/TakeDownButton";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,8 @@ export default async function ListingPage({
   );
   const user = await getCurrentUser();
   const isOwner = user?.id === listing.seller_id;
+  const isAdmin = !!user?.is_admin;
+  const canRemove = isOwner || isAdmin;
   const sold = listing.status === "sold";
 
   return (
@@ -100,7 +103,7 @@ export default async function ListingPage({
               </span>
             )}
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
             {sold ? (
               <span className="text-sm font-semibold text-stone-500">No longer available</span>
             ) : isOwner ? (
@@ -109,6 +112,13 @@ export default async function ListingPage({
               </Link>
             ) : (
               <MessageSellerButton listingId={listing.id} signedIn={!!user} />
+            )}
+            {canRemove && (
+              <TakeDownButton
+                id={listing.id}
+                label={isOwner ? "Remove listing" : "Take down"}
+                redirectTo={isOwner ? "/dashboard" : "/"}
+              />
             )}
           </div>
         </div>
