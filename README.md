@@ -1,4 +1,4 @@
-# SD FTC Parts Exchange
+# partsXchange
 
 A Craigslist-style marketplace for **San Diego FTC teams** to buy and sell spare
 robot parts. Built and run by **The Clueless · FTC Team 11212**.

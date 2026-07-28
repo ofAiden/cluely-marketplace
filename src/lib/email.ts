@@ -28,7 +28,7 @@ export async function sendEmail(opts: {
       // App Passwords are shown with spaces for readability but work without them.
       auth: { user, pass: pass.replace(/\s+/g, "") },
     });
-    const from = process.env.EMAIL_FROM || `SD FTC Parts Exchange <${user}>`;
+    const from = process.env.EMAIL_FROM || `partsXchange <${user}>`;
     await transporter.sendMail({ from, to: opts.to, subject: opts.subject, html: opts.html });
   } catch {
     // Non-fatal.
@@ -37,12 +37,12 @@ export async function sendEmail(opts: {
 
 export function registrationEmail(teamName: string, teamNumber: number, baseUrl: string) {
   return {
-    subject: "Welcome to SD FTC Parts Exchange",
+    subject: "Welcome to partsXchange",
     html: `
       <div style="font-family:system-ui,Arial,sans-serif;max-width:520px;margin:auto;color:#1c1917">
         <h2 style="color:#c2410c">You're registered!</h2>
         <p>Hi <strong>${escapeHtml(teamName)}</strong> (Team ${teamNumber}),</p>
-        <p>Your account on the <strong>SD FTC Parts Exchange</strong> is ready. You can now
+        <p>Your account on <strong>partsXchange</strong> is ready. You can now
         post spare parts and message other San Diego teams to arrange pickups.</p>
         <p><a href="${baseUrl}" style="display:inline-block;background:#ea580c;color:#fff;
         text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600">Browse parts</a></p>
@@ -54,7 +54,7 @@ export function registrationEmail(teamName: string, teamNumber: number, baseUrl:
 
 export function passwordResetEmail(resetUrl: string) {
   return {
-    subject: "Reset your SD FTC Parts Exchange password",
+    subject: "Reset your partsXchange password",
     html: `
       <div style="font-family:system-ui,Arial,sans-serif;max-width:520px;margin:auto;color:#1c1917">
         <h2 style="color:#c2410c">Reset your password</h2>

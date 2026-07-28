@@ -5,9 +5,10 @@ import { getCurrentUser } from "@/lib/auth";
 import { unreadMessageCount } from "@/lib/db";
 import LogoutButton from "@/components/LogoutButton";
 import UnreadBadge from "@/components/UnreadBadge";
+import Wordmark from "@/components/Wordmark";
 
 export const metadata: Metadata = {
-  title: "SD FTC Parts Exchange",
+  title: "partsXchange — spare FTC parts in San Diego",
   description:
     "Buy and sell extra FTC robotics parts with other teams in the San Diego region.",
 };
@@ -22,8 +23,10 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <header className="bg-stone-900 text-white">
           <div className="mx-auto max-w-5xl px-4 py-3 flex items-center gap-4 flex-wrap">
-            <Link href="/" className="font-bold text-lg tracking-tight">
-              <span className="text-orange-500">SD</span> FTC Parts Exchange
+            <Link href="/" aria-label="partsXchange home">
+              {/* Fixed height, width from the viewBox — the wordmark is six
+                  times wider than it is tall and must not be squeezed. */}
+              <Wordmark className="h-7 sm:h-8 w-auto text-white" />
             </Link>
             <span className="hidden sm:inline text-stone-400 text-sm">
               by The Clueless · 11212
